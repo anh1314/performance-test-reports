@@ -2,6 +2,7 @@
 set -e
 
 OUTPUT="index.html"
+REPORTS_DIR="reports"
 
 echo "Generating root index.html..."
 
@@ -17,10 +18,14 @@ cat <<EOF > $OUTPUT
   <ul>
 EOF
 
-for dir in reports/*/; do
-  name=$(basename "$dir")
-  echo "    <li><a href=\"reports/$name/\">$name</a></li>" >> $OUTPUT
-done
+if [ -d "$REPORTS_DIR" ]; then
+  for dir in $REPORTS_DIR/*; do
+    if [ -d "$dir" ]; then
+      name=$(basename "$dir")
+      echo "    <li><a href=\"$REPORTS_DIR/$name/\">$name</a></li>" >> $OUTPUT
+    fi
+  done
+fi
 
 cat <<EOF >> $OUTPUT
   </ul>
@@ -28,4 +33,4 @@ cat <<EOF >> $OUTPUT
 </html>
 EOF
 
-echo "index.html generated"
+echo "index.html generated successfully"
