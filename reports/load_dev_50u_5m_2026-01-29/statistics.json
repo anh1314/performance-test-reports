@@ -1,0 +1,34 @@
+{
+  "Total" : {
+    "transaction" : "Total",
+    "sampleCount" : 50,
+    "errorCount" : 41,
+    "errorPct" : 82.0,
+    "meanResTime" : 8520.720000000003,
+    "medianResTime" : 10038.0,
+    "minResTime" : 1861.0,
+    "maxResTime" : 10231.0,
+    "pct1ResTime" : 10089.5,
+    "pct2ResTime" : 10172.85,
+    "pct3ResTime" : 10231.0,
+    "throughput" : 3.368818218568926,
+    "receivedKBytesPerSec" : 27.006473394758117,
+    "sentKBytesPerSec" : 3.6681956188519065
+  },
+  "List promotion" : {
+    "transaction" : "List promotion",
+    "sampleCount" : 50,
+    "errorCount" : 41,
+    "errorPct" : 82.0,
+    "meanResTime" : 8520.720000000003,
+    "medianResTime" : 10038.0,
+    "minResTime" : 1861.0,
+    "maxResTime" : 10231.0,
+    "pct1ResTime" : 10089.5,
+    "pct2ResTime" : 10172.85,
+    "pct3ResTime" : 10231.0,
+    "throughput" : 3.368818218568926,
+    "receivedKBytesPerSec" : 27.006473394758117,
+    "sentKBytesPerSec" : 3.6681956188519065
+  }
+}
