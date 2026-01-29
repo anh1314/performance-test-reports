@@ -1,115 +1,103 @@
-import csv
 import json
 import os
 from datetime import datetime
-from statistics import mean
 
-JTL_DIR = "jtl"
 REPORT_DIR = "reports"
-SUMMARY_FILE = os.path.join(REPORT_DIR, "summary.json")
 COMPARE_FILE = os.path.join(REPORT_DIR, "compare.html")
 
 
-def parse_jtl(jtl_path):
-    elapsed = []
-    errors = 0
-    timestamps = []
-
-    with open(jtl_path, newline='', encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            elapsed.append(int(row["elapsed"]))
-            timestamps.append(int(row["timeStamp"]))
-            if row["success"].lower() != "true":
-                errors += 1
-
-    elapsed.sort()
-    total = len(elapsed)
-
-    def percentile(p):
-        k = int(total * p)
-        return elapsed[min(k, total - 1)]
-
-    return {
-        "samples": total,
-        "avg": round(mean(elapsed), 2),
-        "p90": percentile(0.90),
-        "p95": percentile(0.95),
-        "errorRate": round(errors * 100 / total, 2),
-        "startTime": min(timestamps),
-        "endTime": max(timestamps),
-    }
+def load_statistics(report_path):
+    stat_file = os.path.join(report_path, "statistics.json")
+    with open(stat_file, encoding="utf-8") as f:
+        data = json.load(f)
+    return data["Total"]
 
 
-def load_summary():
-    if os.path.exists(SUMMARY_FILE):
-        with open(SUMMARY_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+def find_latest_reports():
+    reports = []
+
+    for name in os.listdir(REPORT_DIR):
+        path = os.path.join(REPORT_DIR, name)
+        if not os.path.isdir(path):
+            continue
+        if not os.path.exists(os.path.join(path, "statistics.json")):
+            continue
+
+        reports.append(name)
+
+    # sort theo date cuối tên folder
+    reports.sort(key=lambda x: x.split("_")[-1])
+    return reports[-2:]
 
 
-def save_summary(data):
-    with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+def row(label, old, new):
+    delta = round((new - old) * 100 / old, 2) if old != 0 else 0
+    arrow = "⬆️" if delta > 0 else "⬇️"
+    color = "red" if delta > 0 else "green"
+    return f"""
+    <tr>
+      <td>{label}</td>
+      <td>{old}</td>
+      <td>{new}</td>
+      <td style="color:{color}">{arrow} {delta}%</td>
+    </tr>
+    """
 
 
-def generate_compare_html(a, b):
-    def row(label, v1, v2):
-        delta = round((v2 - v1) * 100 / v1, 2) if v1 != 0 else 0
-        arrow = "⬆️" if delta > 0 else "⬇️"
-        return f"<tr><td>{label}</td><td>{v1}</td><td>{v2}</td><td>{arrow} {delta}%</td></tr>"
-
+def generate_compare_html(prev_name, last_name, prev, last):
     html = f"""
 <html>
 <head>
-  <title>Compare Report</title>
+  <title>Performance Comparison</title>
   <style>
     body {{ font-family: Arial; }}
-    table {{ border-collapse: collapse; }}
-    td, th {{ border: 1px solid #ccc; padding: 8px; }}
+    table {{ border-collapse: collapse; width: 70%; }}
+    th, td {{ border: 1px solid #ccc; padding: 8px; text-align: center; }}
+    th {{ background: #f4f4f4; }}
   </style>
 </head>
 <body>
-<h2>Compare: {a['run']} vs {b['run']}</h2>
+
+<h2>Compare Performance</h2>
+<p><b>Previous:</b> {prev_name}<br>
+<b>Latest:</b> {last_name}</p>
+
 <table>
-<tr><th>Metric</th><th>Previous</th><th>Latest</th><th>Δ</th></tr>
-{row("Avg (ms)", a["avg"], b["avg"])}
-{row("P90 (ms)", a["p90"], b["p90"])}
-{row("P95 (ms)", a["p95"], b["p95"])}
-{row("Error (%)", a["errorRate"], b["errorRate"])}
+<tr>
+  <th>Metric</th>
+  <th>Previous</th>
+  <th>Latest</th>
+  <th>Δ</th>
+</tr>
+
+{row("Samples", prev["sampleCount"], last["sampleCount"])}
+{row("Avg (ms)", prev["meanResTime"], last["meanResTime"])}
+{row("P90 (ms)", prev["pct2ResTime"], last["pct2ResTime"])}
+{row("P95 (ms)", prev["pct3ResTime"], last["pct3ResTime"])}
+{row("Error (%)", prev["errorPct"], last["errorPct"])}
+{row("Throughput", prev["throughput"], last["throughput"])}
+
 </table>
 </body>
 </html>
 """
+
     with open(COMPARE_FILE, "w", encoding="utf-8") as f:
         f.write(html)
 
 
 def main():
-    summary = load_summary()
+    latest = find_latest_reports()
+    if len(latest) < 2:
+        print("Not enough reports to compare")
+        return
 
-    for file in os.listdir(JTL_DIR):
-        if not file.endswith(".jtl"):
-            continue
+    prev_name, last_name = latest
+    prev = load_statistics(os.path.join(REPORT_DIR, prev_name))
+    last = load_statistics(os.path.join(REPORT_DIR, last_name))
 
-        run_name = file.replace(".jtl", "")
-        if any(r["run"] == run_name for r in summary):
-            continue  # đã xử lý rồi
-
-        metrics = parse_jtl(os.path.join(JTL_DIR, file))
-        date_str = run_name.split("_")[-1]
-
-        summary.append({
-            "run": run_name,
-            "date": date_str,
-            **metrics
-        })
-
-    summary.sort(key=lambda x: x["date"])
-    save_summary(summary)
-
-    if len(summary) >= 2:
-        generate_compare_html(summary[-2], summary[-1])
+    generate_compare_html(prev_name, last_name, prev, last)
+    print("compare.html generated successfully")
 
 
 if __name__ == "__main__":
