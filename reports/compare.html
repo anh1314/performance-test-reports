@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Compare Reports</title>
+</head>
+<body>
+<h2>Compare latest 2 reports</h2>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th>Latest</th>
+      <th>Previous</th>
+    </tr>
+  </thead>
+  <tbody id="result"></tbody>
+</table>
+
+<script>
+fetch('summary.json')
+  .then(r => r.json())
+  .then(data => {
+    const keys = Object.keys(data).sort().slice(-2);
+    const latest = data[keys[1]];
+    const prev = data[keys[0]];
+
+    const rows = [
+      ['Samples', latest.samples, prev.samples],
+      ['Avg (ms)', latest.avg, prev.avg],
+      ['P90 (ms)', latest.p90, prev.p90],
+      ['P95 (ms)', latest.p95, prev.p95],
+      ['Error %', latest.errorRate, prev.errorRate]
+    ];
+
+    document.getElementById('result').innerHTML =
+      rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+  });
+</script>
+</body>
+</html>
