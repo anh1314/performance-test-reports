@@ -1,15 +1,11 @@
-# performance-test-reports
-Public JMeter performance test reports - FV
-# Performance Test Reports
+## Performance Test Reports
 
-Public repository for publishing JMeter HTML reports via GitHub Pages.
+Latest report:
+- https://<your-gitlab-pages-url>
 
-## How to view reports
-- Open the GitHub Pages link
-- Select a report folder by test name and date
+Historical reports:
+- Each pipeline run generates a new report under /reports
+- Reports are versioned by commit hash
 
-## Report naming convention
-load_<env>_<users>_<duration>_<date>
-
-Example:
-load_stg_100u_10m_2026-01-28
+Test tool:
+- Apache JMeter 5.6.3
