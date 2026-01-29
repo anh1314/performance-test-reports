@@ -1,24 +1,34 @@
-name: Publish Performance Reports to GitHub Pages
+name: Publish Reports to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - "reports/**"
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy reports to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Generate reports index
+        run: |
+          chmod +x scripts/generate-index.sh
+          ./scripts/generate-index.sh
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: reports
-          keep_files: true
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
