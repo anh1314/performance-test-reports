@@ -1,0 +1,36 @@
+stages:
+  - report
+  - pages
+
+variables:
+  JMETER_REPORT_DIR: reports
+  PUBLIC_DIR: public
+
+# Job 1: Chuẩn bị report (copy report có sẵn)
+generate_report:
+  stage: report
+  image: alpine:latest
+  script:
+    - echo "Prepare JMeter HTML report"
+    - mkdir -p ${PUBLIC_DIR}
+    - cp -r ${JMETER_REPORT_DIR}/* ${PUBLIC_DIR}/
+  artifacts:
+    when: always
+    paths:
+      - public
+    expire_in: 30 days
+
+# Job 2: Publish GitLab Pages (BẮT BUỘC TÊN pages)
+pages:
+  stage: pages
+  image: alpine:latest
+  dependencies:
+    - generate_report
+  script:
+    - echo "Publishing report to GitLab Pages"
+    - ls -la public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
