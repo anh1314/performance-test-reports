@@ -1,7 +1,6 @@
 ## Performance Test Reports
 
-Latest report:
-- https://<your-gitlab-pages-url>
+Latest report: https://anh1314.github.io/performance-test-reports/
 
 Historical reports:
 - Each pipeline run generates a new report under /reports
