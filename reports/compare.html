@@ -1,41 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Compare Reports</title>
+  <meta charset="UTF-8" />
+  <title>Compare latest 2 reports</title>
+  <style>
+    body { font-family: Arial; }
+    table { border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px 12px; }
+    th { background: #f4f4f4; }
+  </style>
 </head>
 <body>
 <h2>Compare latest 2 reports</h2>
 
-<table border="1">
+<table id="compare-table">
   <thead>
     <tr>
       <th>Metric</th>
-      <th>Latest</th>
       <th>Previous</th>
+      <th>Latest</th>
+      <th>Δ (%)</th>
     </tr>
   </thead>
-  <tbody id="result"></tbody>
+  <tbody></tbody>
 </table>
 
 <script>
-fetch('summary.json')
-  .then(r => r.json())
+fetch("./summary.json")
+  .then(res => res.json())
   .then(data => {
-    const keys = Object.keys(data).sort().slice(-2);
-    const latest = data[keys[1]];
-    const prev = data[keys[0]];
+    if (data.length < 2) {
+      document.body.insertAdjacentHTML(
+        "beforeend",
+        "<p><b>Not enough data to compare</b></p>"
+      );
+      return;
+    }
+
+    const prev = data[data.length - 2];
+    const latest = data[data.length - 1];
 
     const rows = [
-      ['Samples', latest.samples, prev.samples],
-      ['Avg (ms)', latest.avg, prev.avg],
-      ['P90 (ms)', latest.p90, prev.p90],
-      ['P95 (ms)', latest.p95, prev.p95],
-      ['Error %', latest.errorRate, prev.errorRate]
+      ["Avg (ms)", prev.avg, latest.avg],
+      ["P90 (ms)", prev.p90, latest.p90],
+      ["P95 (ms)", prev.p95, latest.p95],
+      ["Error (%)", prev.errorRate, latest.errorRate],
     ];
 
-    document.getElementById('result').innerHTML =
-      rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+    const tbody = document.querySelector("#compare-table tbody");
+
+    rows.forEach(([label, v1, v2]) => {
+      const delta = v1 === 0 ? 0 : (((v2 - v1) / v1) * 100).toFixed(2);
+      tbody.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td>${label}</td>
+          <td>${v1}</td>
+          <td>${v2}</td>
+          <td>${delta}%</td>
+        </tr>
+      `);
+    });
+  })
+  .catch(err => {
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      "<p><b>Failed to load summary.json</b></p>"
+    );
+    console.error(err);
   });
 </script>
 </body>
