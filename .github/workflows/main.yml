@@ -1,0 +1,31 @@
+name: Generate performance summary
+
+on:
+  push:
+    paths:
+      - "jtl/*.jtl"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run summary tool
+        run: |
+          python tools/generate_summary.py
+
+      - name: Commit generated reports
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add reports/summary.json reports/compare.html
+          git commit -m "Auto generate summary & compare report" || echo "No changes"
+          git push
