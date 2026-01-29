@@ -4,17 +4,22 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:   # ✅ cho phép bấm Run thủ công
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Generate reports index
@@ -22,12 +27,10 @@ jobs:
           chmod +x scripts/generate-index.sh
           ./scripts/generate-index.sh
 
-      - name: Upload Pages artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: |
-            index.html
-            reports/
+          path: .
 
   deploy:
     needs: build
