@@ -26,11 +26,14 @@ jobs:
       - name: Run summary tool
         run: |
           python tools/generate_summary.py
-
       - name: Commit generated reports
         run: |
           git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add reports || true
+          git config user.email "github-actions@github.com"
+      
+          git add reports summary.json
           git commit -m "Auto generate summary & compare report" || echo "No changes"
-          git push
+      
+          git pull --rebase origin main
+          git push origin main
+
