@@ -9,11 +9,11 @@ COMPARE_FILE = os.path.join(REPORT_DIR, "compare.html")
 
 
 def load_statistics(run_dir):
-    stats_path = os.path.join(run_dir, "statistics.json")
-    if not os.path.exists(stats_path):
+    stat_file = os.path.join(run_dir, "statistics.json")
+    if not os.path.exists(stat_file):
         return None
 
-    with open(stats_path, encoding="utf-8") as f:
+    with open(stat_file, encoding="utf-8") as f:
         data = json.load(f)
 
     total = data.get("Total")
@@ -30,39 +30,86 @@ def load_statistics(run_dir):
     }
 
 
-def generate_compare_html(prev, curr):
-    def row(label, a, b):
-        if a == 0:
-            delta = 0
-        else:
-            delta = round((b - a) * 100 / a, 2)
-        sign = "⬆️" if delta > 0 else "⬇️"
-        return f"<tr><td>{label}</td><td>{a}</td><td>{b}</td><td>{sign} {delta}%</td></tr>"
+def diff_cell(prev, curr, higher_is_worse=True):
+    if prev == 0:
+        return "–"
 
+    delta = round((curr - prev) * 100 / prev, 2)
+
+    # Higher = worse (latency, error)
+    if higher_is_worse:
+        if delta > 0:
+            return f"<span style='color:red'>⬆ {delta}%</span>"
+        else:
+            return f"<span style='color:green'>⬇ {abs(delta)}%</span>"
+    else:
+        if delta > 0:
+            return f"<span style='color:green'>⬆ {delta}%</span>"
+        else:
+            return f"<span style='color:red'>⬇ {abs(delta)}%</span>"
+
+
+def generate_compare_html(prev, curr):
     html = f"""
 <html>
 <head>
-<title>Compare Performance Reports</title>
+<title>Compare reports</title>
 <style>
 body {{ font-family: Arial }}
 table {{ border-collapse: collapse }}
-td, th {{ border: 1px solid #ccc; padding: 8px }}
+td, th {{ border: 1px solid #ccc; padding: 8px; text-align:center }}
 </style>
 </head>
 <body>
 <h2>{prev['run']} → {curr['run']}</h2>
+
 <table>
-<tr><th>Metric</th><th>Previous</th><th>Latest</th><th>Δ</th></tr>
-{row("Avg (ms)", prev["avg"], curr["avg"])}
-{row("P90 (ms)", prev["p90"], curr["p90"])}
-{row("P95 (ms)", prev["p95"], curr["p95"])}
-{row("P99 (ms)", prev["p99"], curr["p99"])}
-{row("Error (%)", prev["errorRate"], curr["errorRate"])}
+<tr>
+  <th>Metric</th>
+  <th>Previous</th>
+  <th>Latest</th>
+  <th>Δ</th>
+</tr>
+
+<tr>
+  <td>Avg (ms)</td>
+  <td>{prev['avg']}</td>
+  <td>{curr['avg']}</td>
+  <td>{diff_cell(prev['avg'], curr['avg'])}</td>
+</tr>
+
+<tr>
+  <td>P90 (ms)</td>
+  <td>{prev['p90']}</td>
+  <td>{curr['p90']}</td>
+  <td>{diff_cell(prev['p90'], curr['p90'])}</td>
+</tr>
+
+<tr>
+  <td>P95 (ms)</td>
+  <td>{prev['p95']}</td>
+  <td>{curr['p95']}</td>
+  <td>{diff_cell(prev['p95'], curr['p95'])}</td>
+</tr>
+
+<tr>
+  <td>P99 (ms)</td>
+  <td>{prev['p99']}</td>
+  <td>{curr['p99']}</td>
+  <td>{diff_cell(prev['p99'], curr['p99'])}</td>
+</tr>
+
+<tr>
+  <td>Error (%)</td>
+  <td>{prev['errorRate']}</td>
+  <td>{curr['errorRate']}</td>
+  <td>{diff_cell(prev['errorRate'], curr['errorRate'])}</td>
+</tr>
+
 </table>
 </body>
 </html>
 """
-
     with open(COMPARE_FILE, "w", encoding="utf-8") as f:
         f.write(html)
 
@@ -70,11 +117,9 @@ td, th {{ border: 1px solid #ccc; padding: 8px }}
 def main():
     summary = []
 
-    for name in sorted(os.listdir(REPORT_DIR)):
-        run_dir = os.path.join(REPORT_DIR, name)
+    for run in sorted(os.listdir(REPORT_DIR)):
+        run_dir = os.path.join(REPORT_DIR, run)
         if not os.path.isdir(run_dir):
-            continue
-        if name == "reports":
             continue
 
         stats = load_statistics(run_dir)
@@ -82,14 +127,13 @@ def main():
             continue
 
         summary.append({
-            "run": name,
-            "date": name.split("_")[-1],
+            "run": run,
+            "date": run.split("_")[-1],
             **stats
         })
 
     summary.sort(key=lambda x: x["date"])
 
-    os.makedirs(REPORT_DIR, exist_ok=True)
     with open(SUMMARY_FILE, "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
 
