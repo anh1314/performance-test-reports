@@ -116,7 +116,7 @@ tr:hover {{
 </head>
 <body>
 
-<h2>{prev['run']} → {curr['run']}</h2>
+<h2>{prev['run']} ↔️ {curr['run']}</h2>
 
 <table>
 <thead>
