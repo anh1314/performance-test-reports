@@ -99,8 +99,9 @@ td, th {{ border: 1px solid #ccc; padding: 8px }}
 {row("Avg (ms)", prev["avg"], curr["avg"])}
 {row("P90 (ms)", prev["p90"], curr["p90"])}
 {row("P95 (ms)", prev["p95"], curr["p95"])}
-{row("P99 (ms)", prev["p99"], curr["p99"])}
+{row("P99 (ms)", prev.get("p99", 0), curr.get("p99", 0))}
 {row("Error (%)", prev["errorRate"], curr["errorRate"])}
+
 </table>
 </body>
 </html>
