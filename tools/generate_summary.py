@@ -1,67 +1,48 @@
-import csv
 import json
 import os
-from statistics import mean
-from math import ceil
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-JTL_DIR = os.path.join(BASE_DIR, "jtl")
 REPORT_DIR = os.path.join(BASE_DIR, "reports")
 
 SUMMARY_FILE = os.path.join(REPORT_DIR, "summary.json")
 COMPARE_FILE = os.path.join(REPORT_DIR, "compare.html")
 
 
-def jmeter_percentile(sorted_values, p):
-    if not sorted_values:
-        return 0
+def load_statistics(run_dir):
+    stats_path = os.path.join(run_dir, "statistics.json")
+    if not os.path.exists(stats_path):
+        return None
 
-    n = len(sorted_values)
-    rank = p * (n + 1)
-    index = int(ceil(rank)) - 1
+    with open(stats_path, encoding="utf-8") as f:
+        data = json.load(f)
 
-    if index < 0:
-        return sorted_values[0]
-    if index >= n:
-        return sorted_values[-1]
-
-    return sorted_values[index]
-
-
-def parse_jtl(path):
-    elapsed = []
-    errors = 0
-
-    with open(path, encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            elapsed.append(int(row["elapsed"]))
-            if row["success"].lower() != "true":
-                errors += 1
-
-    elapsed.sort()
-    total = len(elapsed)
+    total = data.get("Total")
+    if not total:
+        return None
 
     return {
-        "samples": total,
-        "avg": round(mean(elapsed), 2),
-        "p90": jmeter_percentile(elapsed, 0.90),
-        "p95": jmeter_percentile(elapsed, 0.95),
-        "p99": jmeter_percentile(elapsed, 0.99),
-        "errorRate": round(errors * 100 / total, 2),
+        "samples": total["sampleCount"],
+        "avg": round(total["meanResTime"], 2),
+        "p90": round(total["pct1ResTime"], 2),
+        "p95": round(total["pct2ResTime"], 2),
+        "p99": round(total["pct3ResTime"], 2),
+        "errorRate": round(total["errorPct"], 2),
     }
 
 
 def generate_compare_html(prev, curr):
     def row(label, a, b):
-        delta = round((b - a) * 100 / a, 2) if a else 0
+        if a == 0:
+            delta = 0
+        else:
+            delta = round((b - a) * 100 / a, 2)
         sign = "⬆️" if delta > 0 else "⬇️"
         return f"<tr><td>{label}</td><td>{a}</td><td>{b}</td><td>{sign} {delta}%</td></tr>"
 
     html = f"""
 <html>
 <head>
-<title>Compare reports</title>
+<title>Compare Performance Reports</title>
 <style>
 body {{ font-family: Arial }}
 table {{ border-collapse: collapse }}
@@ -81,6 +62,7 @@ td, th {{ border: 1px solid #ccc; padding: 8px }}
 </body>
 </html>
 """
+
     with open(COMPARE_FILE, "w", encoding="utf-8") as f:
         f.write(html)
 
@@ -88,17 +70,21 @@ td, th {{ border: 1px solid #ccc; padding: 8px }}
 def main():
     summary = []
 
-    for file in sorted(os.listdir(JTL_DIR)):
-        if not file.endswith(".jtl"):
+    for name in sorted(os.listdir(REPORT_DIR)):
+        run_dir = os.path.join(REPORT_DIR, name)
+        if not os.path.isdir(run_dir):
+            continue
+        if name == "reports":
             continue
 
-        run = file.replace(".jtl", "")
-        metrics = parse_jtl(os.path.join(JTL_DIR, file))
+        stats = load_statistics(run_dir)
+        if not stats:
+            continue
 
         summary.append({
-            "run": run,
-            "date": run.split("_")[-1],
-            **metrics
+            "run": name,
+            "date": name.split("_")[-1],
+            **stats
         })
 
     summary.sort(key=lambda x: x["date"])
