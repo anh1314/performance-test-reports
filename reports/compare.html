@@ -1,22 +1,59 @@
 
 <html>
 <head>
-<title>Compare Performance Reports</title>
+<title>Compare reports</title>
 <style>
 body { font-family: Arial }
 table { border-collapse: collapse }
-td, th { border: 1px solid #ccc; padding: 8px }
+td, th { border: 1px solid #ccc; padding: 8px; text-align:center }
 </style>
 </head>
 <body>
 <h2>load_dev_50u_5m_2026-01-28 → load_dev_50u_5m_2026-01-29</h2>
+
 <table>
-<tr><th>Metric</th><th>Previous</th><th>Latest</th><th>Δ</th></tr>
-<tr><td>Avg (ms)</td><td>370.66</td><td>8520.72</td><td>⬆️ 2198.8%</td></tr>
-<tr><td>P90 (ms)</td><td>653.5</td><td>10089.5</td><td>⬆️ 1443.92%</td></tr>
-<tr><td>P95 (ms)</td><td>688.75</td><td>10172.85</td><td>⬆️ 1377.0%</td></tr>
-<tr><td>P99 (ms)</td><td>796.0</td><td>10231.0</td><td>⬆️ 1185.3%</td></tr>
-<tr><td>Error (%)</td><td>3.66</td><td>82.0</td><td>⬆️ 2140.44%</td></tr>
+<tr>
+  <th>Metric</th>
+  <th>Previous</th>
+  <th>Latest</th>
+  <th>Δ</th>
+</tr>
+
+<tr>
+  <td>Avg (ms)</td>
+  <td>370.66</td>
+  <td>8520.72</td>
+  <td><span style='color:red'>⬆ 2198.8%</span></td>
+</tr>
+
+<tr>
+  <td>P90 (ms)</td>
+  <td>653.5</td>
+  <td>10089.5</td>
+  <td><span style='color:red'>⬆ 1443.92%</span></td>
+</tr>
+
+<tr>
+  <td>P95 (ms)</td>
+  <td>688.75</td>
+  <td>10172.85</td>
+  <td><span style='color:red'>⬆ 1377.0%</span></td>
+</tr>
+
+<tr>
+  <td>P99 (ms)</td>
+  <td>796.0</td>
+  <td>10231.0</td>
+  <td><span style='color:red'>⬆ 1185.3%</span></td>
+</tr>
+
+<tr>
+  <td>Error (%)</td>
+  <td>3.66</td>
+  <td>82.0</td>
+  <td><span style='color:red'>⬆ 2140.44%</span></td>
+</tr>
+
 </table>
 </body>
 </html>
