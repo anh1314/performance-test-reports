@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 REPORT_DIR = os.path.join(BASE_DIR, "reports")
@@ -9,11 +10,11 @@ COMPARE_FILE = os.path.join(REPORT_DIR, "compare.html")
 
 
 def load_statistics(run_dir):
-    stat_file = os.path.join(run_dir, "statistics.json")
-    if not os.path.exists(stat_file):
+    stats_file = os.path.join(run_dir, "statistics.json")
+    if not os.path.exists(stats_file):
         return None
 
-    with open(stat_file, encoding="utf-8") as f:
+    with open(stats_file, encoding="utf-8") as f:
         data = json.load(f)
 
     total = data.get("Total")
@@ -30,37 +31,83 @@ def load_statistics(run_dir):
     }
 
 
-def diff_cell(prev, curr, higher_is_worse=True):
+def delta_cell(prev, curr):
     if prev == 0:
-        return "–"
+        return '<span class="neutral">–</span>'
 
-    delta = round((curr - prev) * 100 / prev, 2)
+    delta = (curr - prev) * 100 / prev
+    delta = round(delta, 2)
 
-    # Higher = worse (latency, error)
-    if higher_is_worse:
-        if delta > 0:
-            return f"<span style='color:red'>⬆ {delta}%</span>"
-        else:
-            return f"<span style='color:green'>⬇ {abs(delta)}%</span>"
+    if delta > 0:
+        return f'<span class="up">▲ {delta}%</span>'
+    elif delta < 0:
+        return f'<span class="down">▼ {abs(delta)}%</span>'
     else:
-        if delta > 0:
-            return f"<span style='color:green'>⬆ {delta}%</span>"
-        else:
-            return f"<span style='color:red'>⬇ {abs(delta)}%</span>"
+        return '<span class="neutral">0%</span>'
 
 
 def generate_compare_html(prev, curr):
     html = f"""
+<!DOCTYPE html>
 <html>
 <head>
-<title>Compare reports</title>
+<meta charset="utf-8"/>
+<title>Performance Comparison</title>
 <style>
-body {{ font-family: Arial }}
-table {{ border-collapse: collapse }}
-td, th {{ border: 1px solid #ccc; padding: 8px; text-align:center }}
+body {{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+    background: #f7f8fa;
+    padding: 24px;
+}}
+
+h2 {{
+    margin-bottom: 16px;
+}}
+
+table {{
+    border-collapse: collapse;
+    background: white;
+    min-width: 600px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}}
+
+th, td {{
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    text-align: right;
+}}
+
+th {{
+    background: #f0f3f7;
+    text-align: center;
+}}
+
+td:first-child {{
+    text-align: left;
+    font-weight: 500;
+}}
+
+.up {{
+    color: #d92d20;
+    font-weight: 600;
+}}
+
+.down {{
+    color: #12a150;
+    font-weight: 600;
+}}
+
+.neutral {{
+    color: #6b7280;
+}}
+
+tr:hover {{
+    background: #fafafa;
+}}
 </style>
 </head>
 <body>
+
 <h2>{prev['run']} → {curr['run']}</h2>
 
 <table>
@@ -70,46 +117,42 @@ td, th {{ border: 1px solid #ccc; padding: 8px; text-align:center }}
   <th>Latest</th>
   <th>Δ</th>
 </tr>
-
 <tr>
   <td>Avg (ms)</td>
   <td>{prev['avg']}</td>
   <td>{curr['avg']}</td>
-  <td>{diff_cell(prev['avg'], curr['avg'])}</td>
+  <td>{delta_cell(prev['avg'], curr['avg'])}</td>
 </tr>
-
 <tr>
   <td>P90 (ms)</td>
   <td>{prev['p90']}</td>
   <td>{curr['p90']}</td>
-  <td>{diff_cell(prev['p90'], curr['p90'])}</td>
+  <td>{delta_cell(prev['p90'], curr['p90'])}</td>
 </tr>
-
 <tr>
   <td>P95 (ms)</td>
   <td>{prev['p95']}</td>
   <td>{curr['p95']}</td>
-  <td>{diff_cell(prev['p95'], curr['p95'])}</td>
+  <td>{delta_cell(prev['p95'], curr['p95'])}</td>
 </tr>
-
 <tr>
   <td>P99 (ms)</td>
   <td>{prev['p99']}</td>
   <td>{curr['p99']}</td>
-  <td>{diff_cell(prev['p99'], curr['p99'])}</td>
+  <td>{delta_cell(prev['p99'], curr['p99'])}</td>
 </tr>
-
 <tr>
   <td>Error (%)</td>
   <td>{prev['errorRate']}</td>
   <td>{curr['errorRate']}</td>
-  <td>{diff_cell(prev['errorRate'], curr['errorRate'])}</td>
+  <td>{delta_cell(prev['errorRate'], curr['errorRate'])}</td>
 </tr>
-
 </table>
+
 </body>
 </html>
 """
+
     with open(COMPARE_FILE, "w", encoding="utf-8") as f:
         f.write(html)
 
@@ -117,8 +160,8 @@ td, th {{ border: 1px solid #ccc; padding: 8px; text-align:center }}
 def main():
     summary = []
 
-    for run in sorted(os.listdir(REPORT_DIR)):
-        run_dir = os.path.join(REPORT_DIR, run)
+    for name in sorted(os.listdir(REPORT_DIR)):
+        run_dir = os.path.join(REPORT_DIR, name)
         if not os.path.isdir(run_dir):
             continue
 
@@ -127,8 +170,8 @@ def main():
             continue
 
         summary.append({
-            "run": run,
-            "date": run.split("_")[-1],
+            "run": name,
+            "date": name.split("_")[-1],
             **stats
         })
 
