@@ -1,8 +1,7 @@
 import csv
 import json
 import os
-from statistics import mean
-from math import ceil
+from statistics import mean, quantiles
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 JTL_DIR = os.path.join(BASE_DIR, "jtl")
@@ -10,13 +9,6 @@ REPORT_DIR = os.path.join(BASE_DIR, "reports")
 
 SUMMARY_FILE = os.path.join(REPORT_DIR, "summary.json")
 COMPARE_FILE = os.path.join(REPORT_DIR, "compare.html")
-
-
-def percentile(sorted_values, p):
-    if not sorted_values:
-        return 0
-    k = ceil(p * len(sorted_values)) - 1
-    return sorted_values[max(0, min(k, len(sorted_values) - 1))]
 
 
 def parse_jtl(path):
@@ -33,12 +25,15 @@ def parse_jtl(path):
     elapsed.sort()
     total = len(elapsed)
 
+    # JMeter-compatible percentile (PERCENTILE.INC)
+    q = quantiles(elapsed, n=100, method="inclusive")
+
     return {
         "samples": total,
         "avg": round(mean(elapsed), 2),
-        "p90": percentile(elapsed, 0.90),
-        "p95": percentile(elapsed, 0.95),
-        "p99": percentile(elapsed, 0.99),
+        "p90": round(q[89], 2),
+        "p95": round(q[94], 2),
+        "p99": round(q[98], 2),
         "errorRate": round(errors * 100 / total, 2),
     }
 
