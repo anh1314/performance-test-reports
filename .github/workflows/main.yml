@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - "jtl/*.jtl"
+      - "tools/**"
+  workflow_dispatch:
 
 jobs:
   generate:
@@ -22,7 +24,7 @@ jobs:
         run: |
           python tools/generate_summary.py
 
-      - name: Commit generated reports
+      - name: Commit generated summary & compare
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
