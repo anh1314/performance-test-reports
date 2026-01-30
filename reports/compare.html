@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Performance Comparison</title>
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+    background: #f7f8fa;
+    padding: 24px;
+}
+
+h2 {
+    margin-bottom: 16px;
+}
+
+table {
+    border-collapse: collapse;
+    background: white;
+    min-width: 600px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+th, td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    text-align: right;
+}
+
+th {
+    background: #f0f3f7;
+    text-align: center;
+}
+
+td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
+
+.up {
+    color: #d92d20;
+    font-weight: 600;
+}
+
+.down {
+    color: #12a150;
+    font-weight: 600;
+}
+
+.neutral {
+    color: #6b7280;
+}
+
+tr:hover {
+    background: #fafafa;
+}
+</style>
+</head>
+<body>
+
+<h2>load_dev_50u_5m_2026-01-28 → load_dev_50u_5m_2026-01-29</h2>
+
+<table>
+<tr>
+  <th>Metric</th>
+  <th>Previous</th>
+  <th>Latest</th>
+  <th>Δ</th>
+</tr>
+<tr>
+  <td>Avg (ms)</td>
+  <td>370.66</td>
+  <td>8520.72</td>
+  <td><span class="up">▲ 2198.8%</span></td>
+</tr>
+<tr>
+  <td>P90 (ms)</td>
+  <td>653.5</td>
+  <td>10089.5</td>
+  <td><span class="up">▲ 1443.92%</span></td>
+</tr>
+<tr>
+  <td>P95 (ms)</td>
+  <td>688.75</td>
+  <td>10172.85</td>
+  <td><span class="up">▲ 1377.0%</span></td>
+</tr>
+<tr>
+  <td>P99 (ms)</td>
+  <td>796.0</td>
+  <td>10231.0</td>
+  <td><span class="up">▲ 1185.3%</span></td>
+</tr>
+<tr>
+  <td>Error (%)</td>
+  <td>3.66</td>
+  <td>82.0</td>
+  <td><span class="up">▲ 2140.44%</span></td>
+</tr>
+</table>
+
+</body>
+</html>
