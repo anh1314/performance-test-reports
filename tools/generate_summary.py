@@ -37,9 +37,9 @@ def delta_cell(prev, curr):
     delta = round((curr - prev) * 100 / prev, 2)
 
     if delta > 0:
-        return f'<span class="delta up">🔴 ▲ {delta}%</span>'
+        return f'<span class="delta up">⬆ {delta}%</span>'
     elif delta < 0:
-        return f'<span class="delta down">🟢 ▼ {abs(delta)}%</span>'
+        return f'<span class="delta down">⬇ {abs(delta)}%</span>'
     else:
         return '<span class="delta neutral">➖ 0%</span>'
 
