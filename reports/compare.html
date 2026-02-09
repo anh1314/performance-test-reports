@@ -1,42 +1,118 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Compare Reports</title>
+<meta charset="utf-8"/>
+<title>Performance Comparison</title>
+<style>
+body {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+    background: #f6f7fb;
+    padding: 32px;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+table {
+    border-collapse: collapse;
+    background: #ffffff;
+    min-width: 720px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+th, td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+th {
+    background: #f3f4f6;
+    font-weight: 600;
+}
+
+td.metric {
+    font-weight: 500;
+}
+
+.delta {
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.up {
+    color: #dc2626;
+}
+
+.down {
+    color: #16a34a;
+}
+
+.neutral {
+    color: #9ca3af;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover {
+    background: #fafafa;
+}
+</style>
 </head>
 <body>
-<h2>Compare latest 2 reports</h2>
 
-<table border="1">
-  <thead>
-    <tr>
-      <th>Metric</th>
-      <th>Latest</th>
-      <th>Previous</th>
-    </tr>
-  </thead>
-  <tbody id="result"></tbody>
+<h2>load_dev_50u_5m_2026-01-28 ↔️ load_dev_50u_5m_2026-01-29</h2>
+
+<table>
+<thead>
+<tr>
+  <th>Metric</th>
+  <th>Previous</th>
+  <th>Latest</th>
+  <th>Δ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td class="metric">Avg (ms)</td>
+  <td>370.66</td>
+  <td>8520.72</td>
+  <td><span class="delta up">⬆ 2198.8%</span></td>
+</tr>
+<tr>
+  <td class="metric">P90 (ms)</td>
+  <td>653.5</td>
+  <td>10089.5</td>
+  <td><span class="delta up">⬆ 1443.92%</span></td>
+</tr>
+<tr>
+  <td class="metric">P95 (ms)</td>
+  <td>688.75</td>
+  <td>10172.85</td>
+  <td><span class="delta up">⬆ 1377.0%</span></td>
+</tr>
+<tr>
+  <td class="metric">P99 (ms)</td>
+  <td>796.0</td>
+  <td>10231.0</td>
+  <td><span class="delta up">⬆ 1185.3%</span></td>
+</tr>
+<tr>
+  <td class="metric">Error (%)</td>
+  <td>3.66</td>
+  <td>82.0</td>
+  <td><span class="delta up">⬆ 2140.44%</span></td>
+</tr>
+</tbody>
 </table>
 
-<script>
-fetch('summary.json')
-  .then(r => r.json())
-  .then(data => {
-    const keys = Object.keys(data).sort().slice(-2);
-    const latest = data[keys[1]];
-    const prev = data[keys[0]];
-
-    const rows = [
-      ['Samples', latest.samples, prev.samples],
-      ['Avg (ms)', latest.avg, prev.avg],
-      ['P90 (ms)', latest.p90, prev.p90],
-      ['P95 (ms)', latest.p95, prev.p95],
-      ['Error %', latest.errorRate, prev.errorRate]
-    ];
-
-    document.getElementById('result').innerHTML =
-      rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
-  });
-</script>
 </body>
 </html>
