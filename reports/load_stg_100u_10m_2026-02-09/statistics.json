@@ -1,0 +1,34 @@
+{
+  "[UAT] list promotion " : {
+    "transaction" : "[UAT] list promotion ",
+    "sampleCount" : 500,
+    "errorCount" : 62,
+    "errorPct" : 12.4,
+    "meanResTime" : 1949.000000000001,
+    "medianResTime" : 1073.5,
+    "minResTime" : 27.0,
+    "maxResTime" : 8699.0,
+    "pct1ResTime" : 6056.5,
+    "pct2ResTime" : 7036.3499999999985,
+    "pct3ResTime" : 8101.51,
+    "throughput" : 22.068234982566093,
+    "receivedKBytesPerSec" : 283.34458583439994,
+    "sentKBytesPerSec" : 47.218264498830386
+  },
+  "Total" : {
+    "transaction" : "Total",
+    "sampleCount" : 500,
+    "errorCount" : 62,
+    "errorPct" : 12.4,
+    "meanResTime" : 1949.000000000001,
+    "medianResTime" : 1073.5,
+    "minResTime" : 27.0,
+    "maxResTime" : 8699.0,
+    "pct1ResTime" : 6056.5,
+    "pct2ResTime" : 7036.3499999999985,
+    "pct3ResTime" : 8101.51,
+    "throughput" : 22.068234982566093,
+    "receivedKBytesPerSec" : 283.34458583439994,
+    "sentKBytesPerSec" : 47.218264498830386
+  }
+}
